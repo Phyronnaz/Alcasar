@@ -2,9 +2,14 @@ import urllib.request
 import urllib.parse
 import sys
 import getopt
+import os
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 username = ""
 password = ""
+
+cert = dir_path + "/alcasar.crt"
 
 argv = sys.argv[1:]
 
@@ -35,14 +40,10 @@ def get_logon_url(s: str):
     return s.split('http-equiv="refresh" content="0;url=')[1].split("userurl=http://google.com/")[0]
 
 
-try:
-    request = urllib.request.urlopen("http://google.com", cafile="alcasar.crt")
+request = urllib.request.urlopen("http://google.com", cafile=cert)
 
-    response = request.read().decode()
-    challenge = get_challenge(response)
-except:
-    print("Already connected")
-    sys.exit(0)
+response = request.read().decode()
+challenge = get_challenge(response)
 
 data = {"Password": password,
         "UserName": username,
@@ -65,7 +66,7 @@ headers = {
 
 bin_data = urllib.parse.urlencode(data).encode()
 request = urllib.request.Request("https://alcasar/intercept.php", bin_data, headers, method="POST")
-response = urllib.request.urlopen(request, cafile="alcasar.crt").read().decode()
-urllib.request.urlopen(get_logon_url(response), cafile="alcasar.crt")
+response = urllib.request.urlopen(request, cafile=cert).read().decode()
+urllib.request.urlopen(get_logon_url(response), cafile=cert)
 
 print("Success")

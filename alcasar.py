@@ -11,6 +11,7 @@ password = ""
 
 cert = dir_path + "/alcasar.crt"
 
+
 argv = sys.argv[1:]
 
 try:
@@ -33,6 +34,8 @@ if username == "" or password == "":
 
 
 def get_challenge(s: str):
+    for k in s.split('input type="hidden" name="challenge" value="')[0].split("\n"):
+        print(k)
     return s.split('input type="hidden" name="challenge" value="')[1][:32]
 
 
@@ -40,7 +43,7 @@ def get_logon_url(s: str):
     return s.split('http-equiv="refresh" content="0;url=')[1].split("userurl=http://google.com/")[0]
 
 
-request = urllib.request.urlopen("http://google.com", cafile=cert)
+request = urllib.request.urlopen("http://alcasar.localdomain/index.php?url=www.euronews.com", cafile=cert)
 
 response = request.read().decode()
 challenge = get_challenge(response)
@@ -49,7 +52,7 @@ data = {"Password": password,
         "UserName": username,
         "button": "Authentication",
         "challenge": challenge,
-        "uamip": "172.16.112.1",
+        "uamip": "172.16.96.1",
         "uamport": "3990",
         "userurl": "http://google.com/"}
 
@@ -59,13 +62,13 @@ headers = {
     'user-agent': "Mozilla/5.0",
     'content-type': "application/x-www-form-urlencoded",
     'accept': "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-    'referer': "https://alcasar/intercept.php?res=notyet&uamip=172.16.112.1&uamport=3990&challenge=" + challenge,
+    'referer': "https://alcasar/intercept.php?res=notyet&uamip=172.16.96.1&uamport=3990&challenge=" + challenge,
     'accept-encoding': "gzip, deflate, br",
     'accept-language': "en-US,en;q=0.8,fr-FR;q=0.6,fr;q=0.4"
 }
 
 bin_data = urllib.parse.urlencode(data).encode()
-request = urllib.request.Request("https://alcasar/intercept.php", bin_data, headers, method="POST")
+request = urllib.request.Request("https://alcasar.localdomain/intercept.php", bin_data, headers, method="POST")
 response = urllib.request.urlopen(request, cafile=cert).read().decode()
 urllib.request.urlopen(get_logon_url(response), cafile=cert)
 
